@@ -1,0 +1,22 @@
+.nav {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.logo {
+    font-weight: bold;
+}
+
+.links {
+    display: flex;
+    gap: 10px;
+}
+
+.link {
+    color: black;
+}

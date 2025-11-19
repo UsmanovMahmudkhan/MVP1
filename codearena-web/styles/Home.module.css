@@ -1,0 +1,31 @@
+.hero {
+  padding: 50px 0;
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #666;
+}
+
+.cta {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.linkBtn {
+  color: blue;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 40px 0;
+}

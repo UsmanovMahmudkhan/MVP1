@@ -1,0 +1,41 @@
+.container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.card {
+    padding: 20px;
+    border: 1px solid #ccc;
+}
+
+.title {
+    font-size: 24px;
+}
+
+.subtitle {
+    color: #666;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.error {
+    color: red;
+}
+
+.footer {
+    margin-top: 20px;
+}
+
+.hint {
+    font-weight: bold;
+}
