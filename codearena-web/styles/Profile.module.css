@@ -1,15 +1,15 @@
 .profileHeader {
-    background-color: var(--card-bg);
-    padding: 60px 0;
+    background: var(--bg-secondary);
+    padding: 80px 0;
     text-align: center;
-    margin-bottom: 40px;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 60px;
+    border-bottom: 1px solid var(--border);
 }
 
 .avatarLg {
     width: 120px;
     height: 120px;
-    background: linear-gradient(135deg, #0071e3, #00c7be);
+    background: var(--accent);
     border-radius: 50%;
     color: white;
     display: flex;
@@ -18,34 +18,36 @@
     font-size: 48px;
     font-weight: 700;
     margin: 0 auto 24px;
-    box-shadow: 0 10px 30px rgba(0, 113, 227, 0.3);
 }
 
 .username {
     font-size: 40px;
+    font-weight: 600;
     margin-bottom: 12px;
+    color: var(--text-primary);
 }
 
 .levelBadge {
     display: inline-block;
-    background-color: rgba(0, 0, 0, 0.05);
-    padding: 6px 16px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    padding: 8px 20px;
     border-radius: 20px;
     font-size: 14px;
-    font-weight: 600;
-    color: #86868b;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .statsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 24px;
-    margin-bottom: 60px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 32px;
+    margin-bottom: 80px;
 }
 
 .statValue {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 700;
-    color: var(--accent-color);
+    color: var(--text-primary);
     margin-bottom: 0;
 }

@@ -28,7 +28,21 @@ module.exports = (sequelize, DataTypes) => {
         },
         password: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true  // Allow null for OAuth users
+        },
+        googleId: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true
+        },
+        githubId: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            unique: true
+        },
+        provider: {
+            type: DataTypes.STRING,
+            defaultValue: 'local'  // local, google, github
         },
         xp: {
             type: DataTypes.INTEGER,

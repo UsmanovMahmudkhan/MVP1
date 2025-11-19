@@ -31,3 +31,31 @@ exports.login = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Get current user
+exports.me = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.user.id, {
+            attributes: ['id', 'username', 'email', 'xp', 'level', 'createdAt']
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        console.error('Get user error:', error);
+        res.status(500).json({ error: 'Failed to get user' });
+    }
+};
+
+// Logout
+exports.logout = async (req, res) => {
+    try {
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({ error: 'Failed to logout' });
+    }
+};

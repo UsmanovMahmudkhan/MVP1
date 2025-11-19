@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const passport = require('./config/passport');
 
 dotenv.config();
 
@@ -11,14 +12,19 @@ const authRoutes = require('./routes/auth');
 const challengeRoutes = require('./routes/challenge');
 const submissionRoutes = require('./routes/submission');
 const statsRoutes = require('./routes/stats');
+const profileRoutes = require('./routes/profile');
+const runRoutes = require('./routes/run');
 
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 app.use('/auth', authRoutes);
 app.use('/challenges', challengeRoutes);
 app.use('/submissions', submissionRoutes);
 app.use('/stats', statsRoutes);
+app.use('/profile', profileRoutes);
+app.use('/run', runRoutes);
 
 app.get('/', (req, res) => {
   res.send('CodeArena Server is running!');

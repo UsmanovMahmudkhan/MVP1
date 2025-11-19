@@ -1,0 +1,324 @@
+.aboutPage {
+    min-height: 100vh;
+    padding-bottom: 80px;
+}
+
+/* Hero Section */
+.hero {
+    padding: 120px 0 80px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
+    position: relative;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.heroTitle {
+    font-size: 64px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--electric-violet), var(--cyber-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.heroSubtitle {
+    font-size: 20px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Sections */
+.section {
+    padding: 80px 0;
+}
+
+.sectionTitle {
+    font-size: 42px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 60px;
+    color: var(--text-primary);
+}
+
+/* Cards */
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 48px;
+    box-shadow: var(--panel-shadow);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--electric-violet);
+    box-shadow: var(--panel-shadow), var(--glow-shadow);
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid var(--electric-violet);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--electric-violet);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+}
+
+.text {
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.text:last-child {
+    margin-bottom: 0;
+}
+
+.text strong {
+    color: var(--electric-violet);
+    font-weight: 600;
+}
+
+/* Grid Layouts */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+}
+
+.featureCard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.featureCard:hover {
+    border-color: var(--electric-violet);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
+}
+
+.icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.featureCard h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.featureCard p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* Features List */
+.featuresList {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.featureItem {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 32px;
+    transition: all 0.3s ease;
+}
+
+.featureItem:hover {
+    border-color: var(--electric-violet);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+}
+
+.featureIcon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.featureItem h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.featureItem p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* Tech Stack */
+.techGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+}
+
+.techCard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 32px;
+    transition: all 0.3s ease;
+}
+
+.techCard:hover {
+    border-color: var(--electric-violet);
+    transform: translateY(-2px);
+}
+
+.techCard h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--electric-violet);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--glass-border);
+}
+
+.techCard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.techCard li {
+    font-size: 15px;
+    color: var(--text-secondary);
+    padding: 8px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.techCard li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--electric-violet);
+}
+
+/* CTA Section */
+.ctaSection {
+    padding: 100px 0;
+    text-align: center;
+    background: linear-gradient(180deg, transparent 0%, rgba(139, 92, 246, 0.05) 100%);
+    position: relative;
+}
+
+.ctaSection::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.ctaTitle {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.ctaText {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.ctaButtons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .heroTitle {
+        font-size: 42px;
+    }
+
+    .heroSubtitle {
+        font-size: 16px;
+    }
+
+    .sectionTitle {
+        font-size: 32px;
+    }
+
+    .card {
+        padding: 32px;
+    }
+
+    .featureItem {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .ctaTitle {
+        font-size: 36px;
+    }
+
+    .ctaButtons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .ctaButtons a {
+        width: 100%;
+    }
+}

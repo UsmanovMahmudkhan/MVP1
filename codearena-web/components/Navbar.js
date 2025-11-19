@@ -16,6 +16,9 @@ export default function Navbar() {
                         <Link href="/leaderboard" className={styles.link}>
                             Leaderboard
                         </Link>
+                        <Link href="/about" className={styles.link}>
+                            About
+                        </Link>
                         <Link href="/profile/me" className={styles.link}>
                             Profile
                         </Link>

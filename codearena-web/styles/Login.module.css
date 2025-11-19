@@ -1,41 +1,117 @@
 .container {
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 20px;
+    min-height: 100vh;
+    padding: 40px 20px;
 }
 
 .card {
-    padding: 20px;
-    border: 1px solid #ccc;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 60px;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
 }
 
 .title {
-    font-size: 24px;
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary);
 }
 
 .subtitle {
-    color: #666;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    font-size: 15px;
 }
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 24px;
+    text-align: left;
 }
 
 .inputGroup {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+}
+
+.inputGroup label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.3px;
+}
+
+.inputGroup input {
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 2px solid var(--glass-border);
+    background: rgba(26, 31, 46, 0.4);
+    backdrop-filter: blur(10px);
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.inputGroup input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.inputGroup input:hover {
+    border-color: rgba(139, 92, 246, 0.4);
+    background: rgba(26, 31, 46, 0.6);
+}
+
+.inputGroup input:focus {
+    border-color: var(--electric-violet);
+    background: rgba(26, 31, 46, 0.7);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.inputGroup input:focus::placeholder {
+    color: transparent;
 }
 
 .error {
-    color: red;
+    background: rgba(220, 38, 38, 0.05);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    color: #dc2626;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
 }
 
 .footer {
-    margin-top: 20px;
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 .hint {
-    font-weight: bold;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.code {
+    display: inline-block;
+    background: var(--bg-primary);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-top: 8px;
+    border: 1px solid var(--border);
 }
