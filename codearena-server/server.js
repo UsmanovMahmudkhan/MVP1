@@ -14,6 +14,7 @@ const submissionRoutes = require('./routes/submission');
 const statsRoutes = require('./routes/stats');
 const profileRoutes = require('./routes/profile');
 const runRoutes = require('./routes/run');
+const mentorRoutes = require('./routes/mentor');
 
 app.use(cors());
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use('/submissions', submissionRoutes);
 app.use('/stats', statsRoutes);
 app.use('/profile', profileRoutes);
 app.use('/run', runRoutes);
+app.use('/mentor', mentorRoutes);
 
 app.get('/', (req, res) => {
   res.send('CodeArena Server is running!');
