@@ -38,7 +38,7 @@ export default function Play() {
             setOutput('Challenge loaded. Ready to code!');
         } catch (err) {
             console.error(err);
-            setOutput('⚠️ Error generating challenge. Please try again.');
+            setOutput('Error generating challenge. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -47,7 +47,7 @@ export default function Play() {
     const submitSolution = async () => {
         if (!challenge) return;
         setSubmitting(true);
-        setOutput('⚡ Running tests...');
+        setOutput('Running tests...');
 
         const token = localStorage.getItem('token');
         if (!token) {
@@ -71,17 +71,17 @@ export default function Play() {
 
             const data = await res.json();
             if (data.error) {
-                setOutput(`❌ Error: ${data.error}`);
+                setOutput(`Error: ${data.error}`);
             } else {
                 if (data.status === 'passed') {
-                    setOutput(`✅ All tests passed!\n\n${JSON.stringify(JSON.parse(data.output), null, 2)}`);
+                    setOutput(`All tests passed!\n\n${JSON.stringify(JSON.parse(data.output), null, 2)}`);
                 } else {
-                    setOutput(`❌ Tests failed.\n\n${data.output}`);
+                    setOutput(`Tests failed.\n\n${data.output}`);
                 }
             }
         } catch (err) {
             console.error(err);
-            setOutput('❌ Error submitting solution.');
+            setOutput('Error submitting solution.');
         } finally {
             setSubmitting(false);
         }
@@ -93,7 +93,7 @@ export default function Play() {
                 <div className="container">
                     <div className={styles.header}>
                         <h1 className={styles.title}>Web Arena</h1>
-                        <p className={styles.subtitle}>Your coding battlefield awaits</p>
+                        <p className={styles.subtitle}>Your coding workspace</p>
                     </div>
 
                     {/* Toolbar */}
@@ -122,7 +122,7 @@ export default function Play() {
                             disabled={loading}
                             className="btn btn-primary"
                         >
-                            {loading ? '⚡ Generating...' : '🎯 New Challenge'}
+                            {loading ? 'Generating...' : 'New Challenge'}
                         </button>
                     </div>
 
@@ -147,7 +147,7 @@ export default function Play() {
                                     options={{
                                         minimap: { enabled: false },
                                         fontSize: 14,
-                                        fontFamily: 'Monaco, Menlo, monospace',
+                                        fontFamily: 'SF Mono, Menlo, monospace',
                                         lineNumbers: 'on',
                                         roundedSelection: true,
                                         scrollBeyondLastLine: false,
@@ -168,7 +168,7 @@ export default function Play() {
 
                                     {challenge.testCases && challenge.testCases.length > 0 && (
                                         <div style={{ marginTop: '16px' }}>
-                                            <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>
+                                            <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>
                                                 Test Cases
                                             </h4>
                                             {challenge.testCases.slice(0, 3).map((tc, i) => (
@@ -176,15 +176,15 @@ export default function Play() {
                                                     key={i}
                                                     style={{
                                                         fontSize: '12px',
-                                                        fontFamily: 'Monaco, monospace',
+                                                        fontFamily: 'SF Mono, monospace',
                                                         padding: '8px 12px',
-                                                        background: 'var(--midnight-light)',
+                                                        background: 'rgba(255, 255, 255, 0.05)',
                                                         borderRadius: '6px',
                                                         marginBottom: '6px',
-                                                        border: '1px solid var(--glass-border)'
+                                                        border: '1px solid rgba(255, 255, 255, 0.1)'
                                                     }}
                                                 >
-                                                    <div style={{ color: 'var(--cyber-cyan)' }}>Input: {tc.input}</div>
+                                                    <div style={{ color: 'var(--text-primary)' }}>Input: {tc.input}</div>
                                                     <div style={{ color: 'var(--text-secondary)' }}>Output: {tc.output}</div>
                                                 </div>
                                             ))}
@@ -205,9 +205,9 @@ export default function Play() {
                                 onClick={submitSolution}
                                 disabled={submitting || !challenge}
                                 className="btn btn-primary"
-                                style={{ width: '100%', padding: '16px' }}
+                                style={{ width: '100%', padding: '12px' }}
                             >
-                                {submitting ? '⚡ Running...' : '▶ Run Code'}
+                                {submitting ? 'Running...' : 'Run Code'}
                             </button>
                         </div>
                     </div>

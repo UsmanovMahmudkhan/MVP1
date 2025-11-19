@@ -21,64 +21,79 @@ exports.executeCode = async (code, language, testCases) => {
   if (language === 'javascript') {
     fileName = `submission_${timestamp}.js`;
     filePath = path.join(TEMP_DIR, fileName);
-    // Append test runner logic
-    const testRunner = `
-      const testCases = ${JSON.stringify(testCases)};
-      
-      // Helper to capture console.log if needed, but we rely on return value or specific output format
-      // For this simple version, we assume the user code defines a function that we can call.
-      // But we don't know the function name easily without parsing.
-      // A better approach for JS is to expect the user to assign to module.exports or just define a function.
-      // Let's assume the last defined function is the one to test, or we wrap it.
-      
-      // Actually, let's try to find the function name from the code or just append the call.
-      // If the template is "function add(a,b) { ... }", we can append:
-      
-      async function runTests() {
-        const results = [];
-        for (const test of testCases) {
-          try {
-            // We need to invoke the user's function. 
-            // Since we don't know the name, we can use a trick or regex.
-            // Regex to find function name:
-            // function\\s+(\\w+)
-            
-            // Simple regex to find the first function name
-            // This is a bit brittle but works for MVP
-          } catch (e) {
-            results.push({ input: test.input, expected: test.output, actual: e.message, passed: false });
-          }
-        }
-        console.log(JSON.stringify(results));
-      }
-      
-      // runTests();
-    `;
 
-    // Better approach:
-    // We can wrap the user code in a block and return the function, or use eval (unsafe but ok for sandbox).
-    // Or simpler: We parse the function name from the code.
-    const functionNameMatch = code.match(/function\s+(\w+)/);
-    const functionName = functionNameMatch ? functionNameMatch[1] : 'solution';
-
+    // More robust approach: wrap user code and find any exported function
     const testRunnerScript = `
       ${code}
       
       const testCases = ${JSON.stringify(testCases)};
       
+      // Find the first function defined in the user's code
+      // This works for: function name(), const name = () => {}, etc.
+      function findUserFunction() {
+        // Get all function names from global scope
+        const functionNames = Object.keys(global).filter(key => {
+          return typeof global[key] === 'function' && 
+                 !key.startsWith('_') && 
+                 key !== 'findUserFunction' &&
+                 key !== 'runTests';
+        });
+        
+        // Also check for functions in this scope
+        const localFunctions = [];
+        const codeLines = \`${code.replace(/`/g, '\\`')}\`.split('\\n');
+        
+        // Match: function name(...) or const/let/var name = 
+        for (const line of codeLines) {
+          const funcMatch = line.match(/function\\s+(\\w+)\\s*\\(/);
+          if (funcMatch) localFunctions.push(funcMatch[1]);
+          
+          const arrowMatch = line.match(/(?:const|let|var)\\s+(\\w+)\\s*=\\s*(?:\\([^)]*\\)|\\w+)\\s*=>/);
+          if (arrowMatch) localFunctions.push(arrowMatch[1]);
+        }
+        
+        // Try to find the function in global scope first
+        for (const name of localFunctions) {
+          if (typeof eval(name) === 'function') {
+            return eval(name);
+          }
+        }
+        
+        // Fallback: try common names
+        const commonNames = ['solution', 'solve', 'main', 'answer'];
+        for (const name of commonNames) {
+          try {
+            if (typeof eval(name) === 'function') {
+              return eval(name);
+            }
+          } catch (e) {}
+        }
+        
+        return null;
+      }
+      
       async function runTests() {
         const results = [];
         let allPassed = true;
         
+        const userFunction = findUserFunction();
+        
+        if (!userFunction) {
+          console.log(JSON.stringify({ 
+            allPassed: false, 
+            results: [{ error: 'Could not find a function to test. Please define a function in your code.' }] 
+          }));
+          return;
+        }
+        
         for (const test of testCases) {
           try {
             // Parse input arguments
-            // Assuming input is a JSON string representing arguments array, e.g. "[1, 2]"
             const args = JSON.parse(test.input);
             
-            const result = ${functionName}(...args);
+            const result = userFunction(...args);
             const actual = JSON.stringify(result);
-            const expected = test.output; // Assuming output is also a string representation
+            const expected = test.output;
             
             const passed = actual === expected;
             if (!passed) allPassed = false;
@@ -99,62 +114,176 @@ exports.executeCode = async (code, language, testCases) => {
     finalCode = testRunnerScript;
     dockerCmd = `docker run --rm -v "${TEMP_DIR}:/app" -w /app codearena-sandbox node ${fileName}`;
   } else if (language === 'java') {
-    // Java Logic
-    // We assume the user provides a 'Solution' class.
+    // Java Logic - More robust approach
     const solutionFileName = 'Solution.java';
     const solutionFilePath = path.join(TEMP_DIR, solutionFileName);
     fs.writeFileSync(solutionFilePath, code);
 
-    // Parse method name to test
-    // Look for a public method that is not 'main' and not a constructor 'Solution'
-    // Regex: public <type> <name>(
-    const methodMatches = [...code.matchAll(/public\s+(?!class)(\w+)\s+(\w+)\s*\(/g)];
-    let methodName = 'solution';
+    // Find all public methods (excluding main, constructors, and class declaration)
+    const methodMatches = [...code.matchAll(/public\s+(\w+)\s+(\w+)\s*\([^)]*\)/g)];
+    let methodName = null;
+    let returnType = 'Object';
+
     for (const match of methodMatches) {
-      if (match[2] !== 'main' && match[2] !== 'Solution') {
-        methodName = match[2];
+      const type = match[1];
+      const name = match[2];
+      // Skip constructors, main method, and class declarations
+      if (name !== 'main' && name !== 'Solution' && type !== 'class') {
+        methodName = name;
+        returnType = type;
         break;
       }
     }
 
-    const testCasesJson = JSON.stringify(testCases).replace(/"/g, '\\"');
+    // Fallback to common method names if not found
+    if (!methodName) {
+      const commonNames = ['solution', 'solve', 'answer', 'calculate'];
+      for (const name of commonNames) {
+        if (code.includes(`public`) && code.includes(name)) {
+          methodName = name;
+          break;
+        }
+      }
+    }
 
+    if (!methodName) {
+      // Cleanup
+      if (fs.existsSync(solutionFilePath)) fs.unlinkSync(solutionFilePath);
+      return { status: 'error', output: 'Could not find a public method to test in Solution class' };
+    }
+
+    // Generate Main.java with reflection-based approach for more flexibility
     const mainCode = `
 import java.util.*;
+import java.lang.reflect.*;
 
 public class Main {
     public static void main(String[] args) {
-        String testCasesStr = "${testCasesJson}";
-        boolean allPassed = true;
-        List<String> results = new ArrayList<>();
-        
-        Solution sol = new Solution();
-
-        ${testCases.map(tc => {
-      const args = JSON.parse(tc.input);
-      const argsStr = args.join(', ');
-
-      return `
-            try {
-                Object result = sol.${methodName}(${argsStr});
-                String actual = String.valueOf(result);
-                String expected = "${tc.output}";
+        try {
+            Solution sol = new Solution();
+            Class<?> clazz = sol.getClass();
+            
+            // Find the method to test
+            Method targetMethod = null;
+            for (Method method : clazz.getDeclaredMethods()) {
+                String methodName = method.getName();
+                int modifiers = method.getModifiers();
                 
-                boolean passed = actual.equals(expected);
-                if (!passed) allPassed = false;
-                
-                results.add(String.format("{\\"input\\": \\"${tc.input.replace(/"/g, '\\"')}\\", \\"expected\\": \\"%s\\", \\"actual\\": \\"%s\\", \\"passed\\": %b}", expected, actual, passed));
-            } catch (Exception e) {
-                allPassed = false;
-                results.add(String.format("{\\"input\\": \\"${tc.input.replace(/"/g, '\\"')}\\", \\"expected\\": \\"${tc.output}\\", \\"actual\\": \\"%s\\", \\"passed\\": false}", e.getMessage()));
+                // Find public methods that aren't main or constructors
+                if (Modifier.isPublic(modifiers) && 
+                    !methodName.equals("main") && 
+                    !methodName.equals("Solution")) {
+                    targetMethod = method;
+                    break;
+                }
             }
-            `;
-    }).join('\n')}
+            
+            if (targetMethod == null) {
+                System.out.println("{\\"allPassed\\": false, \\"results\\": [{\\"error\\": \\"No testable method found\\"}]}");
+                return;
+            }
+            
+            // Test cases
+            String[][] testCases = {
+                ${testCases.map(tc => {
+      const escapedInput = tc.input.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const escapedOutput = tc.output.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      return `{"${escapedInput}", "${escapedOutput}"}`;
+    }).join(',\n                ')}
+            };
+            
+            boolean allPassed = true;
+            List<String> results = new ArrayList<>();
+            
+            for (String[] testCase : testCases) {
+                try {
+                    String input = testCase[0];
+                    String expected = testCase[1];
+                    
+                    // Parse input arguments
+                    String[] argsArray = parseArgs(input);
+                    Object[] methodArgs = convertArgs(argsArray, targetMethod.getParameterTypes());
+                    
+                    // Invoke method
+                    Object result = targetMethod.invoke(sol, methodArgs);
+                    String actual = String.valueOf(result);
+                    
+                    boolean passed = actual.equals(expected);
+                    if (!passed) allPassed = false;
+                    
+                    results.add(String.format("{\\"input\\": \\"%s\\", \\"expected\\": \\"%s\\", \\"actual\\": \\"%s\\", \\"passed\\": %b}", 
+                        escapeJson(input), escapeJson(expected), escapeJson(actual), passed));
+                } catch (Exception e) {
+                    allPassed = false;
+                    results.add(String.format("{\\"input\\": \\"%s\\", \\"expected\\": \\"%s\\", \\"actual\\": \\"%s\\", \\"passed\\": false}", 
+                        escapeJson(testCase[0]), escapeJson(testCase[1]), escapeJson(e.getMessage())));
+                }
+            }
+            
+            System.out.println("{\\"allPassed\\": " + allPassed + ", \\"results\\": [" + String.join(", ", results) + "]}");
+            
+        } catch (Exception e) {
+            System.out.println("{\\"allPassed\\": false, \\"results\\": [{\\"error\\": \\"" + escapeJson(e.getMessage()) + "\\"}]}");
+        }
+    }
+    
+    private static String[] parseArgs(String input) {
+        // Handle JSON object inputs (e.g., {"key": value, ...})
+        input = input.trim();
         
-        System.out.println("{\\"allPassed\\": " + allPassed + ", \\"results\\": [" + String.join(", ", results) + "]}");
+        // If it's a JSON object, return it as a single argument
+        if (input.startsWith("{") && input.endsWith("}")) {
+            return new String[]{input};
+        }
+        
+        // If it's a JSON array, remove brackets and split
+        if (input.startsWith("[")) input = input.substring(1);
+        if (input.endsWith("]")) input = input.substring(0, input.length() - 1);
+        
+        if (input.trim().isEmpty()) return new String[0];
+        
+        return input.split(",\\\\s*");
+    }
+    
+    private static Object[] convertArgs(String[] args, Class<?>[] paramTypes) throws Exception {
+        Object[] result = new Object[args.length];
+        
+        for (int i = 0; i < args.length && i < paramTypes.length; i++) {
+            String arg = args[i].trim();
+            Class<?> type = paramTypes[i];
+            
+            // Handle JSON objects - pass as String for user to parse
+            if (arg.startsWith("{") && arg.endsWith("}")) {
+                result[i] = arg;
+                continue;
+            }
+            
+            // Remove quotes if present
+            arg = arg.replace("\\"", "");
+            
+            if (type == int.class || type == Integer.class) {
+                result[i] = Integer.parseInt(arg);
+            } else if (type == long.class || type == Long.class) {
+                result[i] = Long.parseLong(arg);
+            } else if (type == double.class || type == Double.class) {
+                result[i] = Double.parseDouble(arg);
+            } else if (type == boolean.class || type == Boolean.class) {
+                result[i] = Boolean.parseBoolean(arg);
+            } else if (type == String.class) {
+                result[i] = arg;
+            } else {
+                result[i] = arg; // Default to string
+            }
+        }
+        return result;
+    }
+    
+    private static String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\\\", "\\\\\\\\").replace("\\"", "\\\\\\"").replace("\\n", "\\\\n").replace("\\r", "\\\\r");
     }
 }
-   `;
+`;
 
     // Write Main.java
     const mainFileName = 'Main.java';
