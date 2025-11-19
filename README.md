@@ -208,10 +208,11 @@ This project adheres to the [Contributor Covenant](https://www.contributor-coven
   
 If you experience or witness unacceptable behavior, please report it through the channels described in the Code of Conduct.  
   
-## License    
-  
-Currently this repository does not specify a license. Contributors should be aware that without a license the default copyright laws apply, which means others have limited rights to use and distribute the code. If you are the maintainer, consider adding an open source license such as MIT, Apache 2.0, or GPLv3 to clarify terms of use.  
-  
+## License
+
+This project is licensed under the Apache License 2.0.  
+See the LICENSE file for full details.
+
 ## Acknowledgements    
   
 - [oclif](https://oclif.io) for simplifying CLI creation.    
