@@ -1,4 +1,4 @@
-public class Solution {
+public class solution {
     /**
      * Given two integers, return their sum.
      *
@@ -11,7 +11,7 @@ public class Solution {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        solution sol = new solution();
         // You can test your code here, but this is not required for submission.
         System.out.println(sol.sum(5, 3));
     }

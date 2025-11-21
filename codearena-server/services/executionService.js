@@ -11,6 +11,9 @@ if (!fs.existsSync(TEMP_DIR)) {
 }
 
 exports.executeCode = async (code, language, testCases) => {
+  console.log(`[ExecutionService] Starting execution for ${language}`);
+  console.log(`[ExecutionService] Code length: ${code.length}`);
+
   const timestamp = Date.now();
   let fileName;
   let filePath;
@@ -35,6 +38,7 @@ exports.executeCode = async (code, language, testCases) => {
         const functionNames = Object.keys(global).filter(key => {
           return typeof global[key] === 'function' && 
                  !key.startsWith('_') && 
+                 !key.startsWith('testCases') &&
                  key !== 'findUserFunction' &&
                  key !== 'runTests';
         });
@@ -120,22 +124,33 @@ exports.executeCode = async (code, language, testCases) => {
     fs.writeFileSync(solutionFilePath, code);
 
     // Find all public methods (excluding main, constructors, and class declaration)
-    const methodMatches = [...code.matchAll(/public\s+(\w+)\s+(\w+)\s*\([^)]*\)/g)];
+    const methodMatches = [...code.matchAll(/public\s+(\w+)\s+(\w+)\s*\(([^)]*)\)/g)];
     let methodName = null;
     let returnType = 'Object';
+    let paramNames = [];
 
     for (const match of methodMatches) {
       const type = match[1];
       const name = match[2];
+      const paramsStr = match[3];
+
       // Skip constructors, main method, and class declarations
       if (name !== 'main' && name !== 'Solution' && type !== 'class') {
         methodName = name;
         returnType = type;
+
+        // Extract parameter names
+        if (paramsStr.trim()) {
+          paramNames = paramsStr.split(',').map(p => {
+            const parts = p.trim().split(/\s+/);
+            return parts[parts.length - 1];
+          });
+        }
         break;
       }
     }
 
-    // Fallback to common method names if not found
+    // Fallback to common method names if not found (but we won't have param names)
     if (!methodName) {
       const commonNames = ['solution', 'solve', 'answer', 'calculate'];
       for (const name of commonNames) {
@@ -151,6 +166,31 @@ exports.executeCode = async (code, language, testCases) => {
       if (fs.existsSync(solutionFilePath)) fs.unlinkSync(solutionFilePath);
       return { status: 'error', output: 'Could not find a public method to test in Solution class' };
     }
+
+    // Transform test cases if input is a JSON object and we have param names
+    const transformedTestCases = testCases.map(tc => {
+      try {
+        // Check if input looks like a JSON object (starts with { and ends with })
+        const trimmedInput = tc.input.trim();
+        if (trimmedInput.startsWith('{') && trimmedInput.endsWith('}') && paramNames.length > 0) {
+          const inputObj = JSON.parse(trimmedInput);
+          // Check if it's not an array (JSON objects in JS are objects, arrays are also objects)
+          if (!Array.isArray(inputObj)) {
+            // Map to array based on paramNames
+            const args = paramNames.map(name => {
+              if (Object.prototype.hasOwnProperty.call(inputObj, name)) {
+                return inputObj[name];
+              }
+              return null; // Or undefined, will become null in JSON
+            });
+            return { ...tc, input: JSON.stringify(args) };
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors, pass as is
+      }
+      return tc;
+    });
 
     // Generate Main.java with reflection-based approach for more flexibility
     const mainCode = `
@@ -185,7 +225,7 @@ public class Main {
             
             // Test cases
             String[][] testCases = {
-                ${testCases.map(tc => {
+                ${transformedTestCases.map(tc => {
       const escapedInput = tc.input.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
       const escapedOutput = tc.output.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
       return `{"${escapedInput}", "${escapedOutput}"}`;
@@ -215,8 +255,9 @@ public class Main {
                         escapeJson(input), escapeJson(expected), escapeJson(actual), passed));
                 } catch (Exception e) {
                     allPassed = false;
+                    Throwable cause = e.getCause() != null ? e.getCause() : e;
                     results.add(String.format("{\\"input\\": \\"%s\\", \\"expected\\": \\"%s\\", \\"actual\\": \\"%s\\", \\"passed\\": false}", 
-                        escapeJson(testCase[0]), escapeJson(testCase[1]), escapeJson(e.getMessage())));
+                        escapeJson(testCase[0]), escapeJson(testCase[1]), escapeJson(cause.getMessage())));
                 }
             }
             
@@ -228,21 +269,41 @@ public class Main {
     }
     
     private static String[] parseArgs(String input) {
-        // Handle JSON object inputs (e.g., {"key": value, ...})
-        input = input.trim();
+        List<String> args = new ArrayList<>();
+        int bracketCount = 0;
+        int braceCount = 0;
+        boolean inQuote = false;
+        StringBuilder current = new StringBuilder();
         
-        // If it's a JSON object, return it as a single argument
-        if (input.startsWith("{") && input.endsWith("}")) {
-            return new String[]{input};
+        // Remove outer brackets if present (for array inputs)
+        input = input.trim();
+        if (input.startsWith("[") && input.endsWith("]")) {
+            input = input.substring(1, input.length() - 1);
         }
         
-        // If it's a JSON array, remove brackets and split
-        if (input.startsWith("[")) input = input.substring(1);
-        if (input.endsWith("]")) input = input.substring(0, input.length() - 1);
+        for (char c : input.toCharArray()) {
+            if (c == '"' && (current.length() == 0 || current.charAt(current.length() - 1) != '\\\\')) {
+                inQuote = !inQuote;
+            }
+            if (!inQuote) {
+                if (c == '[') bracketCount++;
+                if (c == ']') bracketCount--;
+                if (c == '{') braceCount++;
+                if (c == '}') braceCount--;
+                
+                if (c == ',' && bracketCount == 0 && braceCount == 0) {
+                    args.add(current.toString().trim());
+                    current.setLength(0);
+                    continue;
+                }
+            }
+            current.append(c);
+        }
+        if (current.length() > 0) {
+            args.add(current.toString().trim());
+        }
         
-        if (input.trim().isEmpty()) return new String[0];
-        
-        return input.split(",\\\\s*");
+        return args.toArray(new String[0]);
     }
     
     private static Object[] convertArgs(String[] args, Class<?>[] paramTypes) throws Exception {
@@ -252,14 +313,18 @@ public class Main {
             String arg = args[i].trim();
             Class<?> type = paramTypes[i];
             
-            // Handle JSON objects - pass as String for user to parse
+            // Handle JSON objects - pass as String for user to parse (fallback)
             if (arg.startsWith("{") && arg.endsWith("}")) {
-                result[i] = arg;
-                continue;
+                // If param is not String, this might fail later, but we let it pass here
+                // unless we want to try to parse it into an object?
+                // For now, assume complex objects are passed as strings if the user wants them.
+                // But for int[], we need to parse arrays.
             }
             
-            // Remove quotes if present
-            arg = arg.replace("\\"", "");
+            // Remove quotes if present for strings, but NOT for arrays/objects
+            if (type == String.class && arg.startsWith("\\"") && arg.endsWith("\\"")) {
+                arg = arg.substring(1, arg.length() - 1);
+            }
             
             if (type == int.class || type == Integer.class) {
                 result[i] = Integer.parseInt(arg);
@@ -271,11 +336,28 @@ public class Main {
                 result[i] = Boolean.parseBoolean(arg);
             } else if (type == String.class) {
                 result[i] = arg;
+            } else if (type == int[].class) {
+                // Parse int array
+                result[i] = parseIntArray(arg);
             } else {
-                result[i] = arg; // Default to string
+                result[i] = arg; // Default to string or let invoke fail
             }
         }
         return result;
+    }
+
+    private static int[] parseIntArray(String arg) {
+        arg = arg.trim();
+        if (arg.equals("[]")) return new int[0];
+        if (arg.startsWith("[") && arg.endsWith("]")) {
+            arg = arg.substring(1, arg.length() - 1);
+        }
+        String[] parts = arg.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            arr[i] = Integer.parseInt(parts[i].trim());
+        }
+        return arr;
     }
     
     private static String escapeJson(String str) {
@@ -292,9 +374,11 @@ public class Main {
 
     try {
       // Compile both files
+      console.log('[ExecutionService] Compiling Java...');
       const { stderr: compileStderr } = await execPromise(`docker run --rm --entrypoint "" -v "${TEMP_DIR}:/app" -w /app codearena-sandbox javac Solution.java Main.java`, { timeout: 10000 });
 
       if (compileStderr) {
+        console.error('[ExecutionService] Compilation error:', compileStderr);
         // Cleanup
         if (fs.existsSync(solutionFilePath)) fs.unlinkSync(solutionFilePath);
         if (fs.existsSync(mainFilePath)) fs.unlinkSync(mainFilePath);
@@ -302,7 +386,11 @@ public class Main {
       }
 
       // Run Main
+      console.log('[ExecutionService] Running Java...');
       const { stdout, stderr } = await execPromise(`docker run --rm --entrypoint "" -v "${TEMP_DIR}:/app" -w /app codearena-sandbox java Main`, { timeout: 5000 });
+
+      console.log('[ExecutionService] Java execution output:', stdout);
+      if (stderr) console.error('[ExecutionService] Java execution stderr:', stderr);
 
       // Cleanup
       if (fs.existsSync(solutionFilePath)) fs.unlinkSync(solutionFilePath);
@@ -320,6 +408,7 @@ public class Main {
       }
 
     } catch (error) {
+      console.error('[ExecutionService] Java error:', error);
       // Cleanup on error
       if (fs.existsSync(solutionFilePath)) fs.unlinkSync(solutionFilePath);
       if (fs.existsSync(mainFilePath)) fs.unlinkSync(mainFilePath);
@@ -337,8 +426,11 @@ public class Main {
 
   try {
     // Run in Docker
-    // We mount the temp directory to /app in the container
+    console.log(`[ExecutionService] Running Docker command: ${dockerCmd}`);
     const { stdout, stderr } = await execPromise(dockerCmd, { timeout: 5000 }); // 5s timeout
+
+    console.log('[ExecutionService] Execution stdout:', stdout);
+    if (stderr) console.error('[ExecutionService] Execution stderr:', stderr);
 
     // Cleanup
     fs.unlinkSync(filePath);
@@ -351,10 +443,12 @@ public class Main {
       const result = JSON.parse(stdout.trim());
       return { status: result.allPassed ? 'passed' : 'failed', output: JSON.stringify(result.results, null, 2) };
     } catch (e) {
+      console.error('[ExecutionService] JSON parse error:', e);
       return { status: 'error', output: `Failed to parse output: ${stdout}` };
     }
 
   } catch (error) {
+    console.error('[ExecutionService] Docker execution error:', error);
     // Cleanup
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
