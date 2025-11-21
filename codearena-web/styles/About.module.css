@@ -127,11 +127,6 @@
     box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
 }
 
-.icon {
-    font-size: 48px;
-    margin-bottom: 20px;
-}
-
 .featureCard h3 {
     font-size: 22px;
     font-weight: 700;
@@ -169,11 +164,6 @@
 .featureItem:hover {
     border-color: var(--electric-violet);
     box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
-}
-
-.featureIcon {
-    font-size: 32px;
-    flex-shrink: 0;
 }
 
 .featureItem h4 {

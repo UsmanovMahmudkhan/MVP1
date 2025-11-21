@@ -1,10 +1,12 @@
 import Layout from '@/components/Layout';
+import ThreeScene from '@/components/ThreeScene';
 import styles from '@/styles/Home.module.css';
 import Link from 'next/link';
 
 export default function Home() {
   return (
     <Layout title="CodeArena - Master Coding">
+      <ThreeScene />
       {/* Hero Section */}
       <div className={styles.hero}>
         <div className="container">

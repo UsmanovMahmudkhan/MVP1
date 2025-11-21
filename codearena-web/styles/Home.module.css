@@ -6,6 +6,8 @@
   justify-content: center;
   text-align: center;
   padding: 120px 0 80px;
+  position: relative;
+  z-index: 1;
 }
 
 .title {
@@ -64,6 +66,8 @@
 .statsSection {
   padding: 100px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1;
 }
 
 .stats {
@@ -150,6 +154,8 @@
 .howItWorksSection {
   padding: 100px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1;
 }
 
 .steps {
@@ -233,6 +239,8 @@
   padding: 120px 0;
   text-align: center;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1;
 }
 
 .ctaTitle {

@@ -16,6 +16,9 @@ export default function Navbar() {
                         <Link href="/leaderboard" className={styles.link}>
                             Leaderboard
                         </Link>
+                        <Link href="/mentor" className={styles.link}>
+                            Mentor
+                        </Link>
                         <Link href="/about" className={styles.link}>
                             About
                         </Link>

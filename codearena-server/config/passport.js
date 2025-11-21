@@ -11,6 +11,7 @@ passport.use(new GoogleStrategy({
     callbackURL: `${process.env.CALLBACK_URL}/auth/google/callback`
 },
     async (accessToken, refreshToken, profile, done) => {
+        console.log('Google Callback URL used:', `${process.env.CALLBACK_URL}/auth/google/callback`);
         try {
             // Check if user already exists
             let user = await User.findOne({ where: { googleId: profile.id } });

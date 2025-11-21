@@ -1,0 +1,117 @@
+.graphContainer {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    overflow-x: auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.graph {
+    display: flex;
+    gap: 4px;
+}
+
+.months {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.week {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.day {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.day:hover {
+    transform: scale(1.2);
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Contribution Levels */
+.level0 {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.level1 {
+    background-color: rgba(14, 68, 41, 1);
+}
+
+.level2 {
+    background-color: rgba(0, 109, 50, 1);
+}
+
+.level3 {
+    background-color: rgba(38, 166, 65, 1);
+}
+
+.level4 {
+    background-color: rgba(57, 211, 83, 1);
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    margin-bottom: 8px;
+    z-index: 20;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.day:hover .tooltip {
+    opacity: 1;
+}
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    justify-content: flex-end;
+}
+
+.legendItem {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}

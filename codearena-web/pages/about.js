@@ -37,19 +37,16 @@ export default function About() {
                         <h2 className={styles.sectionTitle}>Our Mission</h2>
                         <div className={styles.grid}>
                             <div className={styles.featureCard}>
-                                <div className={styles.icon}>🎯</div>
-                                <h3>Empower Developers</h3>
-                                <p>Provide a platform where developers can sharpen their skills through AI-generated challenges tailored to their level.</p>
+                                <h3>Developer Empowerment</h3>
+                                <p>Providing a robust platform where developers can sharpen their skills through AI-generated challenges tailored to their proficiency level.</p>
                             </div>
                             <div className={styles.featureCard}>
-                                <div className={styles.icon}>🤖</div>
-                                <h3>AI-Powered Learning</h3>
-                                <p>Leverage cutting-edge AI technology to create unique, diverse coding problems that adapt to each user's journey.</p>
+                                <h3>Adaptive AI Learning</h3>
+                                <p>Leveraging cutting-edge AI technology to create unique, diverse coding problems that adapt to each user's learning journey.</p>
                             </div>
                             <div className={styles.featureCard}>
-                                <div className={styles.icon}>🌐</div>
-                                <h3>Open Source First</h3>
-                                <p>Built on open-source principles, encouraging collaboration, transparency, and community-driven development.</p>
+                                <h3>Open Source Commitment</h3>
+                                <p>Built on open-source principles, fostering collaboration, transparency, and community-driven development.</p>
                             </div>
                         </div>
                     </div>
@@ -61,45 +58,39 @@ export default function About() {
                         <h2 className={styles.sectionTitle}>Platform Features</h2>
                         <div className={styles.featuresList}>
                             <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>⚡</div>
                                 <div>
-                                    <h4>AI Challenge Generation</h4>
+                                    <h4>Dynamic Challenge Generation</h4>
                                     <p>Powered by Google Gemini AI, generating unique coding challenges across multiple difficulty levels and programming languages.</p>
                                 </div>
                             </div>
                             <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>🔒</div>
                                 <div>
-                                    <h4>Secure Code Execution</h4>
+                                    <h4>Isolated Execution Environment</h4>
                                     <p>Docker-based sandbox environment ensuring safe and isolated code execution for JavaScript and Java.</p>
                                 </div>
                             </div>
                             <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>🎨</div>
                                 <div>
-                                    <h4>Modern Web Arena</h4>
-                                    <p>Futuristic, cyber-themed interface with Monaco editor integration for a premium coding experience.</p>
+                                    <h4>Advanced Coding Interface</h4>
+                                    <p>Professional-grade interface with Monaco editor integration for a seamless coding experience.</p>
                                 </div>
                             </div>
                             <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>🏆</div>
                                 <div>
-                                    <h4>Gamification System</h4>
-                                    <p>XP, levels, badges, daily streaks, and leaderboards to keep developers motivated and engaged.</p>
+                                    <h4>Engagement & Progression</h4>
+                                    <p>Comprehensive progression system with XP, levels, and leaderboards to track development milestones.</p>
                                 </div>
                             </div>
                             <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>🔐</div>
                                 <div>
-                                    <h4>OAuth Integration</h4>
-                                    <p>Seamless authentication with Google and GitHub for quick and secure access.</p>
+                                    <h4>Secure Authentication</h4>
+                                    <p>Seamless authentication integration with Google and GitHub for secure access control.</p>
                                 </div>
                             </div>
                             <div className={styles.featureItem}>
-                                <div className={styles.featureIcon}>📊</div>
                                 <div>
-                                    <h4>Comprehensive API</h4>
-                                    <p>20+ RESTful endpoints supporting authentication, challenges, submissions, stats, and more.</p>
+                                    <h4>Extensible API Architecture</h4>
+                                    <p>Robust RESTful API supporting authentication, challenge management, submissions, and statistical analysis.</p>
                                 </div>
                             </div>
                         </div>

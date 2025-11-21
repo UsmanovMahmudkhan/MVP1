@@ -1,6 +1,7 @@
 import Layout from '@/components/Layout';
 import styles from '@/styles/Profile.module.css';
 import { useEffect, useState } from 'react';
+import ContributionGraph from '@/components/ContributionGraph';
 import { useRouter } from 'next/router';
 
 export default function Profile() {
@@ -38,16 +39,35 @@ export default function Profile() {
                             router.push('/login');
                             return;
                         }
-                        throw new Error('Failed to fetch profile');
+                        const errorText = await res.text();
+                        console.error('Profile fetch failed:', res.status, errorText);
+
+                        if (res.status === 404 || res.status === 400) {
+                            // Token might be valid but user doesn't exist, or token is invalid (400)
+                            localStorage.removeItem('token');
+                            router.push('/login');
+                            return;
+                        }
+
+                        throw new Error(`Failed to fetch profile: ${res.status} ${errorText}`);
                     }
 
                     const userData = await res.json();
 
                     // Now fetch public stats for this user
-                    const statsRes = await fetch(`http://localhost:3000/stats/${userData.username}`);
-                    const statsData = await statsRes.json();
-
-                    setUser({ ...userData, ...statsData });
+                    try {
+                        const statsRes = await fetch(`http://localhost:3000/stats/${userData.username}`);
+                        if (statsRes.ok) {
+                            const statsData = await statsRes.json();
+                            setUser({ ...userData, ...statsData });
+                        } else {
+                            console.warn('Failed to fetch user stats:', statsRes.status);
+                            setUser(userData);
+                        }
+                    } catch (statsErr) {
+                        console.error('Error fetching stats:', statsErr);
+                        setUser(userData);
+                    }
                 } else {
                     // Fetch public profile
                     const res = await fetch(`http://localhost:3000/stats/${username}`);
@@ -122,6 +142,10 @@ export default function Profile() {
                     </div>
                 </div>
             </div>
-        </Layout>
+
+            <div className="container">
+                <ContributionGraph data={user.dailyActivity} />
+            </div>
+        </Layout >
     );
 }

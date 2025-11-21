@@ -308,13 +308,36 @@ exports.getUserStats = async (req, res) => {
         );
         const challengesSolved = solvedChallengeIds.size;
 
+        // Calculate daily activity for the last year
+        const dailyActivity = [];
+        const today = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(today.getFullYear() - 1);
+
+        // Map submissions to dates
+        const submissionsByDate = {};
+        submissions.forEach(s => {
+            const date = new Date(s.createdAt).toISOString().split('T')[0];
+            submissionsByDate[date] = (submissionsByDate[date] || 0) + 1;
+        });
+
+        // Fill in the last 365 days
+        for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            dailyActivity.push({
+                date: dateStr,
+                count: submissionsByDate[dateStr] || 0
+            });
+        }
+
         res.json({
             username: user.username,
             xp: user.xp,
             level: user.level,
             totalSubmissions,
             passedSubmissions,
-            challengesSolved
+            challengesSolved,
+            dailyActivity
         });
     } catch (error) {
         console.error('Error fetching stats:', error);
@@ -347,13 +370,36 @@ exports.getUserStatsPublic = async (req, res) => {
         );
         const challengesSolved = solvedChallengeIds.size;
 
+        // Calculate daily activity for the last year
+        const dailyActivity = [];
+        const today = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(today.getFullYear() - 1);
+
+        // Map submissions to dates
+        const submissionsByDate = {};
+        submissions.forEach(s => {
+            const date = new Date(s.createdAt).toISOString().split('T')[0];
+            submissionsByDate[date] = (submissionsByDate[date] || 0) + 1;
+        });
+
+        // Fill in the last 365 days
+        for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            dailyActivity.push({
+                date: dateStr,
+                count: submissionsByDate[dateStr] || 0
+            });
+        }
+
         res.json({
             username: user.username,
             xp: user.xp,
             level: user.level,
             totalSubmissions,
             passedSubmissions,
-            challengesSolved
+            challengesSolved,
+            dailyActivity
         });
     } catch (error) {
         console.error('Error fetching public stats:', error);
