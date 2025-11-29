@@ -678,3 +678,23 @@ See the LICENSE file for full details.
 - The open source community for packages and resources that make development easier.    
   
 We hope this README provides clarity on the purpose and layout of the CoreArenaCLI monorepo. Feel free to explore each component and contribute to the project!
+
+
+##  Project Context & Collaboration (Deliverable 2 - OSS)
+
+This project was developed as **Deliverable 2** for the Open Source Software (OSS) course, focusing on demonstrating proficiency in modern Git workflows and effective GitHub collaboration practices among the group members.
+
+### Core Objectives Achieved:
+
+* **Repository Management:** Established a public repository with necessary topics, a detailed description, and the **Apache License 2.0**.
+* **Documentation Standards:** Included essential community documents (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`) to establish clear contribution guidelines.
+* **Team Workflow:** Demonstrated effective collaboration through branching, meaningful commits, and pull requests, ensuring active participation from all designated collaborators.
+* **Release Management:** Uploaded the initial code base and created the official **`v0.0.1`** release tag, marking the project's first stable state.
+
+### Individual Contribution (Replace with Your Name or Student ID)
+
+My required significant commit for this deliverable focused on enhancing the project's operational readiness and documentation:
+
+* **Task:** Addition of the comprehensive **`CodeArena Production Deployment Guide`** (Options 1, 2, and 3) to the `README.md`.
+* **Impact:** This contribution provides clear, multi-platform instructions for deploying the complex, multi-component CoreArena platform, significantly lowering the barrier to entry for production environments and ensuring long-term maintainability.
+* **Fulfillment:** This extensive documentation effort satisfies the requirement for a mandatory, meaningful contribution while adding critical value to the project's user and maintainer documentation.
