@@ -77,10 +77,15 @@ export default function Mentor() {
         formData.append('audio', audioBlob, 'recording.webm');
 
         try {
-            const response = await fetch('http://localhost:3000/mentor/chat', {
+            const response = await fetch('http://localhost:3001/mentor/chat', {
                 method: 'POST',
                 body: formData,
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || errorData.error || 'Failed to get response');
+            }
 
             const data = await response.json();
 
@@ -93,8 +98,9 @@ export default function Mentor() {
             }
         } catch (error) {
             console.error('Error fetching mentor response:', error);
-            setResponseText("Sorry, I'm having trouble connecting to the server.");
-            setStatus('Connection Error');
+            const errorMessage = error.message || "Sorry, I'm having trouble connecting to the server.";
+            setResponseText(errorMessage);
+            setStatus('Error');
         } finally {
             setIsProcessing(false);
         }
@@ -159,13 +165,18 @@ export default function Mentor() {
         setResponseText('');
 
         try {
-            const response = await fetch('http://localhost:3000/mentor/chat', {
+            const response = await fetch('http://localhost:3001/mentor/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ message: text }),
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || errorData.error || 'Failed to get response');
+            }
 
             const data = await response.json();
 
@@ -178,8 +189,9 @@ export default function Mentor() {
             }
         } catch (error) {
             console.error('Error fetching mentor response:', error);
-            setResponseText("Sorry, I'm having trouble connecting to the server.");
-            setStatus('Connection Error');
+            const errorMessage = error.message || "Sorry, I'm having trouble connecting to the server.";
+            setResponseText(errorMessage);
+            setStatus('Error');
         } finally {
             setIsProcessing(false);
         }

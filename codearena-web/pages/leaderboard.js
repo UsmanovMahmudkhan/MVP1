@@ -10,7 +10,7 @@ export default function Leaderboard() {
     useEffect(() => {
         async function fetchLeaderboard() {
             try {
-                const res = await fetch('http://localhost:3000/stats/leaderboard');
+                const res = await fetch('http://localhost:3001/stats/leaderboard');
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }

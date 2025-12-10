@@ -4,12 +4,16 @@ const GitHubStrategy = require('passport-github2').Strategy;
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 
-// Google OAuth Strategy
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.CALLBACK_URL}/auth/google/callback`
-},
+// Google OAuth Strategy - only initialize if credentials are provided
+if (process.env.GOOGLE_CLIENT_ID && 
+    process.env.GOOGLE_CLIENT_SECRET && 
+    process.env.GOOGLE_CLIENT_ID !== 'placeholder_google_client_id' &&
+    process.env.CALLBACK_URL) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${process.env.CALLBACK_URL}/auth/google/callback`
+    },
     async (accessToken, refreshToken, profile, done) => {
         console.log('Google Callback URL used:', `${process.env.CALLBACK_URL}/auth/google/callback`);
         try {
@@ -40,15 +44,22 @@ passport.use(new GoogleStrategy({
             return done(error, null);
         }
     }
-));
+    ));
+} else {
+    console.warn('Google OAuth not configured. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and CALLBACK_URL to enable.');
+}
 
-// GitHub OAuth Strategy
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: `${process.env.CALLBACK_URL}/auth/github/callback`,
-    scope: ['user:email']
-},
+// GitHub OAuth Strategy - only initialize if credentials are provided
+if (process.env.GITHUB_CLIENT_ID && 
+    process.env.GITHUB_CLIENT_SECRET && 
+    process.env.GITHUB_CLIENT_ID !== 'placeholder_github_client_id' &&
+    process.env.CALLBACK_URL) {
+    passport.use(new GitHubStrategy({
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: `${process.env.CALLBACK_URL}/auth/github/callback`,
+        scope: ['user:email']
+    },
     async (accessToken, refreshToken, profile, done) => {
         try {
             // Check if user already exists
@@ -81,7 +92,10 @@ passport.use(new GitHubStrategy({
             return done(error, null);
         }
     }
-));
+    ));
+} else {
+    console.warn('GitHub OAuth not configured. Set GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, and CALLBACK_URL to enable.');
+}
 
 // Serialize user for session
 passport.serializeUser((user, done) => {

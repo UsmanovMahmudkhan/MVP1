@@ -1,13 +1,15 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Challenge, Submission } = require('../models');
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+// Use OpenRouter API which supports Google Gemini models
+const OPENROUTER_API_KEY = process.env.GOOGLE_API_KEY; // Using GOOGLE_API_KEY env var but it's actually OpenRouter key
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 exports.generateChallenge = async (req, res) => {
     try {
         const { difficulty = 'easy', language = 'javascript' } = req.body;
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        // Use OpenRouter to call Google Gemini model
+        // OpenRouter model name for Gemini 2.5 Flash
 
         // Get user's recent challenges to avoid duplicates
         const userId = req.user?.id;
@@ -65,25 +67,164 @@ Return ONLY valid JSON in this exact format:
   ]
 }`;
 
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
+        // Call OpenRouter API for Google Gemini
+        const openRouterResponse = await fetch(OPENROUTER_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'http://localhost:3001',
+                'X-Title': 'CodeArena Challenge Generator'
+            },
+            body: JSON.stringify({
+                model: 'google/gemini-2.5-flash', // OpenRouter model name for Gemini
+                messages: [
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 2000  // Limit tokens for free tier
+            })
+        });
 
-        let jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error('Invalid response format from AI');
+        if (!openRouterResponse.ok) {
+            const errorData = await openRouterResponse.json().catch(() => ({}));
+            throw new Error(`OpenRouter API error: ${openRouterResponse.status} - ${errorData.error?.message || openRouterResponse.statusText}`);
         }
 
-        const challengeData = JSON.parse(jsonMatch[0]);
+        const openRouterData = await openRouterResponse.json();
+        let responseText = openRouterData.choices[0]?.message?.content || '';
+        
+        // Clean up markdown code blocks if present
+        responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        
+        // Try to extract JSON - handle both single-line and multi-line JSON
+        let jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            // Try to find JSON starting from first {
+            const firstBrace = responseText.indexOf('{');
+            if (firstBrace !== -1) {
+                jsonMatch = [responseText.substring(firstBrace)];
+            }
+        }
+        
+        if (!jsonMatch) {
+            console.error('No JSON found in response:', responseText.substring(0, 500));
+            throw new Error('Invalid response format from AI - no JSON found');
+        }
+
+        let challengeData;
+        try {
+            challengeData = JSON.parse(jsonMatch[0]);
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError.message);
+            console.error('Attempted to parse:', jsonMatch[0].substring(0, 300));
+            console.error('Full response:', responseText.substring(0, 1000));
+            throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
+        }
+        
+        // Validate and ensure all required fields are present
+        if (!challengeData.title || !challengeData.description) {
+            throw new Error('AI response missing required fields (title, description)');
+        }
+        
+        // Ensure testCases is an array
+        if (!challengeData.testCases || !Array.isArray(challengeData.testCases)) {
+            challengeData.testCases = challengeData.testCases ? [challengeData.testCases] : [];
+        }
+        
+        // Ensure template exists
+        if (!challengeData.template) {
+            challengeData.template = challengeData.template || `function solution() {\n  // Your code here\n}`;
+        }
+        
+        // Ensure difficulty and language are set
+        challengeData.difficulty = challengeData.difficulty || difficulty;
+        challengeData.language = challengeData.language || language;
 
         const challenge = await Challenge.create({
-            ...challengeData,
+            title: challengeData.title,
+            description: challengeData.description,
+            difficulty: challengeData.difficulty,
+            language: challengeData.language,
+            template: challengeData.template,
+            testCases: challengeData.testCases,
             createdByAI: true
         });
 
         res.json(challenge);
     } catch (error) {
-        console.error('Challenge generation error:', error);
-        res.status(500).json({ error: 'Failed to generate challenge' });
+        console.error('=== Challenge generation error ===');
+        console.error('Error type:', error.constructor.name);
+        console.error('Error message:', error.message);
+        console.error('Error status:', error.status, error.statusCode);
+        console.error('Full error:', error);
+        if (error.stack) {
+            console.error('Stack trace:', error.stack.substring(0, 500));
+        }
+        
+        // Check for quota error - API returns status 429
+        const errorMsg = String(error.message || '');
+        const isQuotaError = error.status === 429 || 
+                            error.statusCode === 429 ||
+                            errorMsg.toLowerCase().includes('quota') || 
+                            errorMsg.includes('429') || 
+                            errorMsg.includes('Too Many Requests') ||
+                            errorMsg.includes('exceeded');
+        
+        console.log('Quota check:', {
+            status: error.status,
+            statusCode: error.statusCode,
+            isQuotaError,
+            msgPreview: errorMsg.substring(0, 80)
+        });
+        
+        // EXPLICIT CHECK: Check status first (most reliable)
+        if (error.status === 429 || error.statusCode === 429 || isQuotaError) {
+            console.log('✅ QUOTA ERROR DETECTED - Status:', error.status, '| Message check:', isQuotaError);
+            let retryAfter = '60';
+            try {
+                if (error.errorDetails && Array.isArray(error.errorDetails)) {
+                    const retryInfo = error.errorDetails.find(d => d && d['@type'] && d['@type'].includes('RetryInfo'));
+                    if (retryInfo && retryInfo.retryDelay) {
+                        retryAfter = String(Math.ceil(parseFloat(retryInfo.retryDelay)));
+                    }
+                }
+            } catch (e) {
+                // Ignore
+            }
+            
+            console.log('Returning quota error response with status 503');
+            return res.status(503).json({ 
+                error: 'API quota exceeded',
+                message: 'Google Gemini API daily quota has been reached. The free tier allows 20 requests per day. Please wait 24 hours for the quota to reset, or upgrade your API plan.',
+                retryAfter: retryAfter,
+                quotaInfo: 'Free tier limit: 20 requests/day',
+                suggestion: 'Check your quota at https://ai.dev/usage?tab=rate-limit or try again tomorrow'
+            });
+        }
+        
+        // Return detailed error - ensure message is always present
+        const errorMessage = error.message || 'Unknown error occurred';
+        const errorResponse = {
+            error: 'Failed to generate challenge',
+            message: errorMessage
+        };
+        
+        // Add more details in development
+        if (process.env.NODE_ENV === 'development') {
+            errorResponse.details = error.stack;
+            errorResponse.errorType = error.constructor.name;
+            // Include quota info if it's a quota error but wasn't caught
+            if (error.status === 429 || String(error.message || '').includes('quota')) {
+                errorResponse.message = 'Google Gemini API quota exceeded. Please wait 24 hours or upgrade your plan.';
+                errorResponse.quotaInfo = 'Free tier limit: 20 requests/day';
+            }
+        }
+        
+        res.status(500).json(errorResponse);
     }
 };
 
@@ -141,10 +282,7 @@ exports.getDailyChallenge = async (req, res) => {
 
         // If no challenge for today, generate one
         if (!dailyChallenge) {
-            const { GoogleGenerativeAI } = require('@google/generative-ai');
-            const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
+            // Use OpenRouter API for Google Gemini
             const prompt = `Generate a coding challenge in javascript with medium difficulty.
 Return the response in strictly valid JSON format with the following structure:
 {
@@ -157,9 +295,34 @@ Return the response in strictly valid JSON format with the following structure:
 }
 Do not include markdown formatting like \`\`\`json. Just the raw JSON string.`;
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let text = response.text();
+            // Call OpenRouter API
+            const openRouterResponse = await fetch(OPENROUTER_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': 'http://localhost:3001',
+                    'X-Title': 'CodeArena Daily Challenge'
+                },
+                body: JSON.stringify({
+                    model: 'google/gemini-2.5-flash',
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 2000
+                })
+            });
+
+            if (!openRouterResponse.ok) {
+                throw new Error(`OpenRouter API error: ${openRouterResponse.status}`);
+            }
+
+            const openRouterData = await openRouterResponse.json();
+            let text = openRouterData.choices[0]?.message?.content || '';
             text = text.replace(/```json/g, '').replace(/```/g, '').trim();
             const challengeData = JSON.parse(text);
 

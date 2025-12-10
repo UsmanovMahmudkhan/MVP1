@@ -13,8 +13,18 @@ const path = require('path');
 
 exports.getMentorResponse = async (req, res) => {
     try {
-        if (!process.env.GROQ_API_KEY) {
-            return res.status(500).json({ error: 'Server configuration error: GROQ_API_KEY is missing.' });
+        if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === 'dummy_key_for_dev') {
+            return res.status(503).json({ 
+                error: 'Mentor service is not configured.',
+                message: 'GROQ_API_KEY is required to use the mentor feature. Please contact the administrator.'
+            });
+        }
+
+        if (!groq) {
+            return res.status(500).json({ 
+                error: 'Mentor service initialization failed.',
+                message: 'The AI mentor service could not be initialized.'
+            });
         }
 
         let userMessage = req.body.message;

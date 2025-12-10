@@ -9,7 +9,7 @@ export default function Layout({ children, title = 'CodeArena' }) {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
             </Head>
             <Navbar />
-            <main>{children}</main>
+            <main style={{ position: 'relative', zIndex: 1 }}>{children}</main>
             <footer style={{
                 textAlign: 'center',
                 padding: 'var(--spacing-2xl) 0',

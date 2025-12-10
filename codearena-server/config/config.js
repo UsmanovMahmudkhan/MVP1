@@ -6,6 +6,7 @@ module.exports = {
     password: process.env.POSTGRES_PASSWORD || 'codearena_password',
     database: process.env.POSTGRES_DB || 'codearena_db',
     host: 'localhost',
+    port: process.env.POSTGRES_PORT || 5433,
     dialect: 'postgres',
   },
   test: {

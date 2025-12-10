@@ -20,7 +20,7 @@ export default function Register() {
         setLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3000/auth/register', {
+            const res = await fetch('http://localhost:3001/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,20 +123,44 @@ export default function Register() {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-                        <a
-                            href="http://localhost:3000/auth/google"
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch('http://localhost:3001/auth/google', { redirect: 'manual' });
+                                    if (res.ok || res.status === 302) {
+                                        window.location.href = 'http://localhost:3001/auth/google';
+                                    } else {
+                                        const data = await res.json();
+                                        setError(data.message || 'Google sign-in is not available. Please use email/password.');
+                                    }
+                                } catch (err) {
+                                    setError('Unable to connect to Google sign-in. Please use email/password.');
+                                }
+                            }}
                             className="btn-outline"
                             style={{ width: '100%' }}
                         >
                             Google
-                        </a>
-                        <a
-                            href="http://localhost:3000/auth/github"
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch('http://localhost:3001/auth/github', { redirect: 'manual' });
+                                    if (res.ok || res.status === 302) {
+                                        window.location.href = 'http://localhost:3001/auth/github';
+                                    } else {
+                                        const data = await res.json();
+                                        setError(data.message || 'GitHub sign-in is not available. Please use email/password.');
+                                    }
+                                } catch (err) {
+                                    setError('Unable to connect to GitHub sign-in. Please use email/password.');
+                                }
+                            }}
                             className="btn-outline"
                             style={{ width: '100%' }}
                         >
                             GitHub
-                        </a>
+                        </button>
                     </div>
 
                     <p className={styles.footer}>

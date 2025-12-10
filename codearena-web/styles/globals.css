@@ -95,6 +95,8 @@ body {
 
 .btn-outline:hover {
   background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Utilities */
@@ -132,4 +134,12 @@ body {
 
 .mb-4 {
   margin-bottom: 40px;
+}
+
+/* Glass effect */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
 }

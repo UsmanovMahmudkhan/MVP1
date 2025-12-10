@@ -30,18 +30,60 @@ export default function Play() {
         setOutput('');
         setIsDemo(false);
         try {
-            const res = await fetch('http://localhost:3000/challenges/generate', {
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const res = await fetch('http://localhost:3001/challenges/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ difficulty, language })
             });
-            const data = await res.json();
+            
+            
+            // Parse JSON response safely
+            let data;
+            try {
+                const text = await res.text();
+                data = text ? JSON.parse(text) : {};
+            } catch (parseError) {
+                console.error('Failed to parse response:', parseError);
+                throw new Error(`Invalid response from server. Status: ${res.status}`);
+            }
+            
+            
+            // Check if response is successful before setting challenge
+            if (!res.ok) {
+                // Handle quota errors specially
+                if (res.status === 503 && data.error === 'API quota exceeded') {
+                    throw new Error(`⚠️ ${data.message}\n\n${data.suggestion || ''}`);
+                }
+                throw new Error(data.message || data.error || 'Failed to generate challenge');
+            }
+            
+            // Only set challenge if response is successful
             setChallenge(data);
-            setCode(data.template);
+            setCode(data.template || '// Your code here');
             setOutput('Challenge loaded. Ready to code!');
         } catch (err) {
-            console.error(err);
-            setOutput('Error generating challenge. Please try again.');
+            console.error('Challenge generation error:', err);
+            // Extract error message - handle both Error objects and plain strings
+            let errorMsg = 'Failed to generate challenge. Please try again.';
+            if (err instanceof Error) {
+                errorMsg = err.message;
+            } else if (typeof err === 'string') {
+                errorMsg = err;
+            } else if (err && err.message) {
+                errorMsg = err.message;
+            }
+            
+            // Display error in output area
+            setOutput(`❌ Error: ${errorMsg}\n\n💡 Tip: You can use the "Load Line Cutting Demo" button to try a demo challenge.`);
+            // Clear challenge state on error so UI doesn't try to render invalid data
+            setChallenge(null);
+            setCode('// Start a new challenge to begin coding!');
         } finally {
             setLoading(false);
         }
@@ -191,7 +233,7 @@ Return: ["A", "C", "B"]`,
         }
 
         try {
-            const res = await fetch('http://localhost:3000/submissions', {
+            const res = await fetch('http://localhost:3001/submissions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -204,7 +246,17 @@ Return: ["A", "C", "B"]`,
                 })
             });
 
-            const data = await res.json();
+            
+            // Parse JSON response safely
+            let data;
+            try {
+                const text = await res.text();
+                data = text ? JSON.parse(text) : {};
+            } catch (parseError) {
+                console.error('Failed to parse response:', parseError);
+                throw new Error(`Invalid response from server. Status: ${res.status}`);
+            }
+            
             if (data.error) {
                 setOutput(`Error: ${data.error}`);
             } else {
@@ -215,8 +267,22 @@ Return: ["A", "C", "B"]`,
                 }
             }
         } catch (err) {
-            console.error(err);
-            setOutput('Error submitting solution.');
+            console.error('Challenge generation error:', err);
+            // Extract error message - handle both Error objects and plain strings
+            let errorMsg = 'Failed to generate challenge. Please try again.';
+            if (err instanceof Error) {
+                errorMsg = err.message;
+            } else if (typeof err === 'string') {
+                errorMsg = err;
+            } else if (err && err.message) {
+                errorMsg = err.message;
+            }
+            
+            // Display error in output area
+            setOutput(`❌ Error: ${errorMsg}\n\n💡 Tip: You can use the "Load Line Cutting Demo" button to try a demo challenge.`);
+            // Clear challenge state on error so UI doesn't try to render invalid data
+            setChallenge(null);
+            setCode('// Start a new challenge to begin coding!');
         } finally {
             setSubmitting(false);
         }

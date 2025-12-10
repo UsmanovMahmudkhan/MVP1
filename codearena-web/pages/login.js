@@ -17,7 +17,7 @@ export default function Login() {
         setError('');
 
         try {
-            const res = await fetch('http://localhost:3000/auth/login', {
+            const res = await fetch('http://localhost:3001/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -96,8 +96,20 @@ export default function Login() {
                     </div>
 
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
-                        <a
-                            href="http://localhost:3000/auth/google"
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch('http://localhost:3001/auth/google', { redirect: 'manual' });
+                                    if (res.ok || res.status === 302) {
+                                        window.location.href = 'http://localhost:3001/auth/google';
+                                    } else {
+                                        const data = await res.json();
+                                        setError(data.message || 'Google sign-in is not available. Please use email/password.');
+                                    }
+                                } catch (err) {
+                                    setError('Unable to connect to Google sign-in. Please use email/password.');
+                                }
+                            }}
                             className="btn-outline"
                             style={{
                                 flex: 1,
@@ -117,9 +129,21 @@ export default function Login() {
                                 <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335" />
                             </svg>
                             Google
-                        </a>
-                        <a
-                            href="http://localhost:3000/auth/github"
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch('http://localhost:3001/auth/github', { redirect: 'manual' });
+                                    if (res.ok || res.status === 302) {
+                                        window.location.href = 'http://localhost:3001/auth/github';
+                                    } else {
+                                        const data = await res.json();
+                                        setError(data.message || 'GitHub sign-in is not available. Please use email/password.');
+                                    }
+                                } catch (err) {
+                                    setError('Unable to connect to GitHub sign-in. Please use email/password.');
+                                }
+                            }}
                             className="btn-outline"
                             style={{
                                 flex: 1,
@@ -136,7 +160,7 @@ export default function Login() {
                                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
                             </svg>
                             GitHub
-                        </a>
+                        </button>
                     </div>
 
                     <p className={styles.footer}>

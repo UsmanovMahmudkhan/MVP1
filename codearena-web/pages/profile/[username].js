@@ -27,7 +27,7 @@ export default function Profile() {
                     }
 
                     // Fetch current user from /auth/me
-                    const res = await fetch('http://localhost:3000/auth/me', {
+                    const res = await fetch('http://localhost:3001/auth/me', {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -56,7 +56,7 @@ export default function Profile() {
 
                     // Now fetch public stats for this user
                     try {
-                        const statsRes = await fetch(`http://localhost:3000/stats/${userData.username}`);
+                        const statsRes = await fetch(`http://localhost:3001/stats/${userData.username}`);
                         if (statsRes.ok) {
                             const statsData = await statsRes.json();
                             setUser({ ...userData, ...statsData });
@@ -70,7 +70,7 @@ export default function Profile() {
                     }
                 } else {
                     // Fetch public profile
-                    const res = await fetch(`http://localhost:3000/stats/${username}`);
+                    const res = await fetch(`http://localhost:3001/stats/${username}`);
                     if (!res.ok) {
                         throw new Error('User not found');
                     }
