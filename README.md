@@ -17,6 +17,8 @@ Below is a high‑level summary of the top‑level directories and files. Each s
 | `/codearena-web` | The web client built with Next.js. Provides the user‑facing interface and consumes the server API. |    
 | `/docker` | Dockerfile used to build application images for deployment. |    
 | `docker-compose.yml` | Compose file orchestrating multiple containers (CLI, server, database) for local development. |    
+| `DEMO.md` | Visual demonstration and screenshots of the platform features. |    
+| `/screenshots` | Directory containing project screenshots for documentation. |    
   
 The repository currently lacks a root `README.md` (hence this file), but each subproject contains its own documentation.  
   
